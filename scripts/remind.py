@@ -2,7 +2,7 @@ import urllib.request
 import urllib.error
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 FIREBASE_PROJECT_ID = os.environ['FIREBASE_PROJECT_ID']
 FIREBASE_API_KEY = os.environ['FIREBASE_API_KEY']
@@ -63,7 +63,7 @@ def main():
 
         fields = [
             {"name": "📋 Evento", "value": name, "inline": True},
-            {"name": "📅 Data", "value": event_date.strftime('%d/%m/%Y %H:%M'), "inline": True},
+            {"name": "📅 Data", "value": (event_date + timedelta(hours=2)).strftime('%d/%m/%Y %H:%M'), "inline": True},
             {"name": "👥 Partecipanti", "value": str(num_participants), "inline": True}
         ]
 
