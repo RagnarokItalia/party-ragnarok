@@ -62,7 +62,7 @@ def main():
         num_participants = len(participants_array)
 
         fields = [
-            {"name": "📋 Evento", "value": name, "inline": True},
+            {"name": "📋 Raid", "value": name, "inline": True},
             {"name": "📅 Data", "value": (event_date + timedelta(hours=2)).strftime('%d/%m/%Y %H:%M'), "inline": True},
             {"name": "👥 Partecipanti", "value": str(num_participants), "inline": True}
         ]
@@ -71,19 +71,19 @@ def main():
         update_url = f"https://firestore.googleapis.com/v1/projects/{FIREBASE_PROJECT_ID}/databases/(default)/documents/events/{doc_id}?key={FIREBASE_API_KEY}"
 
         if 25 <= diff_minutes <= 35 and not reminded_30:
-            send_discord("⏰ Promemoria — 30 minuti all'evento!", 0xf39c12, fields)
+            send_discord("⏰ Promemoria — 30 minuti al Raid!", 0xf39c12, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded30": {"booleanValue": True}}}).encode()
             req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded30", data=patch_data, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='PATCH')
             urllib.request.urlopen(req)
 
         elif 5 <= diff_minutes <= 15 and not reminded_10:
-            send_discord("🚨 Evento tra 10 minuti! Preparatevi!", 0xe74c3c, fields)
+            send_discord("🚨 Raid tra 10 minuti! Preparatevi!", 0xe74c3c, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded10": {"booleanValue": True}}}).encode()
             req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded10", data=patch_data, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='PATCH')
             urllib.request.urlopen(req)
 
         elif 0 <= diff_minutes <= 5 and not reminded_1:
-            send_discord("🔴 L'evento sta per iniziare! Entrate subito!", 0xe74c3c, fields)
+            send_discord("🔴 Il Raid sta per iniziare! Entrate subito!", 0xe74c3c, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded1": {"booleanValue": True}}}).encode()
             req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded1", data=patch_data, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='PATCH')
             urllib.request.urlopen(req)

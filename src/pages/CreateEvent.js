@@ -21,10 +21,10 @@ function CreateEvent() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         embeds: [{
-          title: '⚔️ Nuovo evento creato!',
+          title: '🗡️ Nuovo Party creato!',
           color: 0x2ecc71,
           fields: [
-            { name: '📋 Evento', value: eventName, inline: true },
+            { name: '📋 Party', value: eventName, inline: true },
             { name: '📅 Data', value: formattedDate, inline: true },
             { name: '👥 Posti totali', value: `${totalSlots}`, inline: true },
             { name: '🗡️ DPS', value: `${slots.DPS} posti`, inline: true },
