@@ -16,6 +16,7 @@ def get_events():
     return data.get('documents', [])
 
 def send_discord(message, color, fields):
+    print(f"Invio a: {DISCORD_PROMEMORIA[:50]}...")  # stampa solo i primi 50 caratteri
     payload = json.dumps({
         "embeds": [{
             "title": message,
