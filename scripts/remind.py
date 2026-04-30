@@ -35,7 +35,9 @@ def send_discord(message, color, fields):
 
 def main():
     events = get_events()
+    print(f"Trovati {len(events)} eventi")
     now = datetime.now(timezone.utc)
+    print(f"Ora UTC: {now}")
 
     for event in events:
         fields_data = event.get('fields', {})
