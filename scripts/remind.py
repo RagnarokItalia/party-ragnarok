@@ -16,7 +16,7 @@ def get_events():
     return data.get('documents', [])
 
 def send_discord(message, color, fields):
-    print(f"Invio a: {DISCORD_PROMEMORIA[:50]}...")  # stampa solo i primi 50 caratteri
+    print(f"Invio a: {DISCORD_PROMEMORIA[:50]}...")
     payload = json.dumps({
         "embeds": [{
             "title": message,
@@ -29,7 +29,10 @@ def send_discord(message, color, fields):
     req = urllib.request.Request(
         DISCORD_PROMEMORIA,
         data=payload,
-        headers={'Content-Type': 'application/json'},
+        headers={
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0'
+        },
         method='POST'
     )
     urllib.request.urlopen(req)
@@ -53,6 +56,7 @@ def main():
 
         event_date = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         diff_minutes = (event_date - now).total_seconds() / 60
+        print(f"Evento: {name} - diff_minutes: {diff_minutes:.1f}")
 
         participants_array = fields_data.get('participants', {}).get('arrayValue', {}).get('values', [])
         num_participants = len(participants_array)
@@ -69,19 +73,19 @@ def main():
         if 25 <= diff_minutes <= 35 and not reminded_30:
             send_discord("⏰ Promemoria — 30 minuti all'evento!", 0xf39c12, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded30": {"booleanValue": True}}}).encode()
-            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded30", data=patch_data, headers={'Content-Type': 'application/json'}, method='PATCH')
+            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded30", data=patch_data, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='PATCH')
             urllib.request.urlopen(req)
 
         elif 5 <= diff_minutes <= 15 and not reminded_10:
             send_discord("🚨 Evento tra 10 minuti! Preparatevi!", 0xe74c3c, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded10": {"booleanValue": True}}}).encode()
-            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded10", data=patch_data, headers={'Content-Type': 'application/json'}, method='PATCH')
+            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded10", data=patch_data, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='PATCH')
             urllib.request.urlopen(req)
 
         elif 0 <= diff_minutes <= 5 and not reminded_1:
             send_discord("🔴 L'evento sta per iniziare! Entrate subito!", 0xe74c3c, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded1": {"booleanValue": True}}}).encode()
-            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded1", data=patch_data, headers={'Content-Type': 'application/json'}, method='PATCH')
+            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded1", data=patch_data, headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}, method='PATCH')
             urllib.request.urlopen(req)
 
 if __name__ == '__main__':
