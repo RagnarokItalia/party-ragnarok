@@ -43,6 +43,7 @@ def main():
         date_str = fields_data.get('date', {}).get('stringValue', '')
         reminded_30 = fields_data.get('reminded30', {}).get('booleanValue', False)
         reminded_10 = fields_data.get('reminded10', {}).get('booleanValue', False)
+        reminded_1 = fields_data.get('reminded1', {}).get('booleanValue', False)
 
         if not date_str:
             continue
@@ -72,6 +73,12 @@ def main():
             send_discord("🚨 Evento tra 10 minuti! Preparatevi!", 0xe74c3c, fields)
             patch_data = json.dumps({"fields": {**fields_data, "reminded10": {"booleanValue": True}}}).encode()
             req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded10", data=patch_data, headers={'Content-Type': 'application/json'}, method='PATCH')
+            urllib.request.urlopen(req)
+
+        elif 0 <= diff_minutes <= 5 and not reminded_1:
+            send_discord("🔴 L'evento sta per iniziare! Entrate subito!", 0xe74c3c, fields)
+            patch_data = json.dumps({"fields": {**fields_data, "reminded1": {"booleanValue": True}}}).encode()
+            req = urllib.request.Request(update_url + "&updateMask.fieldPaths=reminded1", data=patch_data, headers={'Content-Type': 'application/json'}, method='PATCH')
             urllib.request.urlopen(req)
 
 if __name__ == '__main__':
