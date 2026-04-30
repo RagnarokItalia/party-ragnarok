@@ -10,6 +10,7 @@ import EventDetail from './pages/EventDetail';
 import EditEvent from './pages/EditEvent';
 import Members from './pages/Members';
 import Stats from './pages/Stats';
+import Guide from './pages/Guide';
 
 function App() {
   const [user, loading] = useAuthState(auth);
@@ -27,6 +28,7 @@ function App() {
         <Route path="/edit-event/:id" element={user ? <EditEvent /> : <Navigate to="/login" />} />
         <Route path="/members" element={user ? <Members /> : <Navigate to="/login" />} />
         <Route path="/stats" element={user ? <Stats /> : <Navigate to="/login" />} />
+        <Route path="/guide" element={user ? <Guide /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );

@@ -60,6 +60,7 @@ function Home() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '10px' }}>
         <h1 style={{ margin: 0 }}>⚔️ PartyRagnarok</h1>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('/guide')} style={btnStyle('#1abc9c')}>📖 Guida</button>
           <button onClick={() => navigate('/members')} style={btnStyle('#9b59b6')}>👥 Membri</button>
           <button onClick={() => navigate('/stats')} style={btnStyle('#e67e22')}>📊 Stats</button>
           <button onClick={() => navigate('/profile')} style={btnStyle('#4285f4')}>👤 Profilo</button>
