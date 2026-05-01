@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { JOB_ICONS } from '../constants';
-const DISCORD_NOTIFICHE = 'https://discord.com/api/webhooks/1499169987296886944/Pa-ptNPr1zpy9i2LMjWl54HnwqCoYr_x8OQxZQhqRC2E7WaAdSb8RSlD5-AHLtvel-R9';
+const DISCORD_NOTIFICHE = process.env.REACT_APP_DISCORD_EVENTS;
 const DISCORD_PROMEMORIA = 'https://discord.com/api/webhooks/1499169727409557636/5SGI8gBOovw4oOyHzaha8BxEM1YO9a6ju4PxcnvuPAq7WJwwaWnsWo1jXgiPYJtanuoa';
 
 function EventDetail() {
