@@ -11,6 +11,7 @@ import EditEvent from './pages/EditEvent';
 import Members from './pages/Members';
 import Stats from './pages/Stats';
 import Guide from './pages/Guide';
+import Admin from './pages/Admin';
 
 function App() {
   const [user, loading] = useAuthState(auth);
@@ -20,6 +21,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/admin" element={user ? <Admin /> : <Navigate to="/login" />} />
         <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/login" />} />
