@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, addDoc, collection } from 'firebase/firestore';
 import { JOB_ICONS } from '../constants';
-const DISCORD_NOTIFICHE = process.env.REACT_APP_DISCORD_EVENTS;
-const DISCORD_PROMEMORIA = 'https://discord.com/api/webhooks/1499169727409557636/5SGI8gBOovw4oOyHzaha8BxEM1YO9a6ju4PxcnvuPAq7WJwwaWnsWo1jXgiPYJtanuoa';
 
 function EventDetail() {
   const { id } = useParams();
@@ -21,10 +19,8 @@ function EventDetail() {
     const fetchData = async () => {
       const eventSnap = await getDoc(doc(db, 'events', id));
       if (eventSnap.exists()) setEvent({ id: eventSnap.id, ...eventSnap.data() });
-
       const userSnap = await getDoc(doc(db, 'users', user.uid));
       if (userSnap.exists()) setUserProfile(userSnap.data());
-
       setLoading(false);
     };
     fetchData();
@@ -74,61 +70,46 @@ function EventDetail() {
   };
 
   const handleLeave = async () => {
-  const eventRef = doc(db, 'events', id);
-  const wasParticipant = event.participants.some(p => p.uid === user.uid);
-  let newParticipants = event.participants.filter(p => p.uid !== user.uid);
-  let newReserves = [...event.reserves];
+    const eventRef = doc(db, 'events', id);
+    const wasParticipant = event.participants.some(p => p.uid === user.uid);
+    let newParticipants = event.participants.filter(p => p.uid !== user.uid);
+    let newReserves = [...event.reserves];
+    const formattedDate = new Date(event.date).toLocaleString('it-IT');
 
-  if (wasParticipant && newReserves.length > 0) {
-    // Promuovi prima riserva
-    const promoted = newReserves.shift();
-    newParticipants = [...newParticipants, promoted];
+    if (wasParticipant && newReserves.length > 0) {
+      const promoted = newReserves.shift();
+      newParticipants = [...newParticipants, promoted];
 
-    // Notifica Discord promozione
-    await fetch(DISCORD_NOTIFICHE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        embeds: [{
-          title: '🎉 Riserva promossa!',
-          color: 0x2ecc71,
-          fields: [
-            { name: '📋 Evento', value: event.name, inline: true },
-            { name: '⚔️ Giocatore', value: `${promoted.charName} (${promoted.job})`, inline: true },
-            { name: '📢 Stato', value: 'Spostato da riserva a partecipante!', inline: false }
-          ],
-          timestamp: new Date().toISOString()
-        }]
-      })
+      // Aggiungi notifica promozione alla coda
+      await addDoc(collection(db, 'notificationQueue'), {
+        message: `🎉 ${promoted.charName} è stato promosso da riserva!`,
+        eventName: event.name,
+        eventDate: formattedDate,
+        color: 'green',
+        sent: false,
+        createdAt: new Date().toISOString()
+      });
+
+    } else if (wasParticipant && newReserves.length === 0) {
+      // Aggiungi notifica posto libero alla coda
+      await addDoc(collection(db, 'notificationQueue'), {
+        message: '🔔 Si è liberato un posto!',
+        eventName: event.name,
+        eventDate: formattedDate,
+        color: 'orange',
+        sent: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    await updateDoc(eventRef, {
+      participants: newParticipants,
+      reserves: newReserves
     });
-  } else if (wasParticipant && newReserves.length === 0) {
-    // Posto libero, nessuna riserva
-    await fetch(DISCORD_NOTIFICHE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        embeds: [{
-          title: '🔔 Posto libero!',
-          color: 0xf39c12,
-          fields: [
-            { name: '📋 Evento', value: event.name, inline: true },
-            { name: '📅 Data', value: new Date(event.date).toLocaleString('it-IT'), inline: true },
-            { name: '📢 Stato', value: 'Si è liberato un posto! Accedi per prenotarti.', inline: false }
-          ],
-          timestamp: new Date().toISOString()
-        }]
-      })
-    });
-  }
 
-  await updateDoc(eventRef, {
-    participants: newParticipants,
-    reserves: newReserves
-  });
-
-  const snap = await getDoc(eventRef);
-  setEvent({ id: snap.id, ...snap.data() });
-};
+    const snap = await getDoc(eventRef);
+    setEvent({ id: snap.id, ...snap.data() });
+  };
 
   const handleDelete = async () => {
     if (window.confirm('Sei sicuro di voler eliminare questo evento?')) {
@@ -160,7 +141,6 @@ function EventDetail() {
     <div style={{ backgroundColor: '#1a1a2e', minHeight: '100vh', color: 'white', padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
       <button onClick={() => navigate('/')} style={btnStyle('#555')}>← Home</button>
 
-      {/* Pulsanti creatore */}
       {isCreator && (
         <div style={{ float: 'right' }}>
           <button onClick={() => navigate(`/edit-event/${id}`)} style={btnStyle('#f39c12')}>✏️ Modifica</button>
@@ -194,7 +174,6 @@ function EventDetail() {
         </div>
       ))}
 
-      {/* Azioni partecipazione */}
       <div style={{ marginTop: '20px' }}>
         {!isParticipant && !isReserve && (
           <button onClick={handleJoinClick} style={btnStyle(isFull ? '#f39c12' : '#2ecc71')}>
@@ -210,7 +189,6 @@ function EventDetail() {
         )}
       </div>
 
-      {/* Commenti */}
       <h3 style={{ marginTop: '30px' }}>💬 Commenti</h3>
       {(event.comments || []).length === 0 && <p style={{ color: '#aaa' }}>Nessun commento.</p>}
       {(event.comments || []).map((c, i) => (
@@ -233,7 +211,6 @@ function EventDetail() {
         <button onClick={handleComment} style={btnStyle('#4285f4')}>Invia</button>
       </div>
 
-      {/* Popup selezione job */}
       {showJobPicker && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,

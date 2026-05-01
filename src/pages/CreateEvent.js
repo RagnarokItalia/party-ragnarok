@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
-const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1499166410025472151/sPmC241qIY4V5_vLAYPCoPeIcyN9MFIOQbbFnOq9uNnsLhL024KSpKjUgKb-enDbE85S';
-
 function CreateEvent() {
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
@@ -12,39 +10,13 @@ function CreateEvent() {
   const navigate = useNavigate();
   const user = auth.currentUser;
 
-  const sendDiscordNotification = async (eventName, eventDate, slots) => {
-    const totalSlots = Object.values(slots).reduce((a, b) => a + b, 0);
-    const formattedDate = new Date(eventDate).toLocaleString('it-IT');
-
-    await fetch(DISCORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        embeds: [{
-          title: '🗡️ Nuovo Party creato!',
-          color: 0x2ecc71,
-          fields: [
-            { name: '📋 Party', value: eventName, inline: true },
-            { name: '📅 Data', value: formattedDate, inline: true },
-            { name: '👥 Posti totali', value: `${totalSlots}`, inline: true },
-            { name: '🗡️ DPS', value: `${slots.DPS} posti`, inline: true },
-            { name: '✝️ Support', value: `${slots.Support} posti`, inline: true },
-            { name: '🛡️ Tank', value: `${slots.Tank} posti`, inline: true },
-          ],
-          footer: { text: 'Accedi su PartyRagnarok per prenotarti!' },
-          timestamp: new Date().toISOString()
-        }]
-      })
-    });
-  };
-
   const handleCreate = async () => {
     if (!name || !date) {
       alert('Inserisci nome e data evento!');
       return;
     }
 
-    const docRef = await addDoc(collection(db, 'events'), {
+    await addDoc(collection(db, 'events'), {
       name,
       date: new Date(date).toISOString(),
       slots,
@@ -52,10 +24,10 @@ function CreateEvent() {
       reserves: [],
       comments: [],
       createdBy: user.uid,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      notified: false
     });
 
-    await sendDiscordNotification(name, date, slots);
     navigate('/');
   };
 
