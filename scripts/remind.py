@@ -6,8 +6,8 @@ from datetime import datetime, timezone, timedelta
 
 FIREBASE_PROJECT_ID = os.environ['FIREBASE_PROJECT_ID']
 FIREBASE_API_KEY = os.environ['FIREBASE_API_KEY']
-DISCORD_PROMEMORIA = os.environ['DISCORD_PROMEMORIA']
-DISCORD_EVENTS = os.environ['DISCORD_EVENTS']
+DISCORD_PROMEMORIA = os.environ.get('DISCORD_PROMEMORIA', '')
+DISCORD_EVENTS = os.environ.get('DISCORD_EVENTS', '')
 
 DAYS_MAP = {
     'Lunedì': 0, 'Martedì': 1, 'Mercoledì': 2, 'Giovedì': 3,
