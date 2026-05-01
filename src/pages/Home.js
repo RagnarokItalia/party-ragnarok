@@ -1,26 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, doc, getDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 
 function Home() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [showPast, setShowPast] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const user = auth.currentUser;
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       const q = query(collection(db, 'events'), orderBy('date', 'asc'));
       const snapshot = await getDocs(q);
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       const now = new Date();
       setUpcomingEvents(list.filter(e => new Date(e.date) >= now));
       setPastEvents(list.filter(e => new Date(e.date) < now).reverse());
+
+      const userSnap = await getDoc(doc(db, 'users', user.uid));
+      if (userSnap.exists() && userSnap.data().isAdmin) {
+        setIsAdmin(true);
+      }
     };
-    fetchEvents();
+    fetchData();
   }, []);
 
   const handleLogout = async () => {
@@ -55,7 +61,7 @@ function Home() {
 
   return (
     <div style={{ backgroundColor: '#1a1a2e', minHeight: '100vh', color: 'white', padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '10px' }}>
         <h1 style={{ margin: 0 }}>⚔️ PartyRagnarok</h1>
@@ -65,6 +71,9 @@ function Home() {
           <button onClick={() => navigate('/stats')} style={btnStyle('#e67e22')}>📊 Stats</button>
           <button onClick={() => navigate('/profile')} style={btnStyle('#4285f4')}>👤 Profilo</button>
           <button onClick={() => navigate('/create-event')} style={btnStyle('#2ecc71')}>➕ Evento</button>
+          {isAdmin && (
+            <button onClick={() => navigate('/admin')} style={btnStyle('#8e44ad')}>⚙️ Admin</button>
+          )}
           <button onClick={handleLogout} style={btnStyle('#e74c3c')}>🚪</button>
         </div>
       </div>
